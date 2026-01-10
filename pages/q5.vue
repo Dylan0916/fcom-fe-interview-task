@@ -35,6 +35,8 @@ import vQ5 from '@/assets/q5.mov'
  * Note:
  * - fetchList 與 fetchDetail 都是模擬 API 請求的函數
  */
+const BATCH_SIZE = 20
+const BATCH_DELAY = 1000
 
 defineOptions({
   name: 'Q5',
@@ -46,8 +48,28 @@ const {
   fetchList,
   fetchDetail,
 } = useQ5()
+const { isProcessing: isChunkTaskProcessing, start: startChunkTask } = useChunkTask()
 
-const run = () => {}
+const run = async () => {
+  try {
+    if (isChunkTaskProcessing.value) {
+      return
+    }
+
+    const list: { id: string }[] = await fetchList()
+
+    await startChunkTask(
+      list,
+      item => fetchDetail(item.id),
+      chunkResults => {
+        data.value.push(...chunkResults)
+      },
+      { batchSize: BATCH_SIZE, batchDelay: BATCH_DELAY }
+    )
+  } catch (error) {
+    console.error(error)
+  }
+}
 
 </script>
 
