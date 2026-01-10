@@ -4,16 +4,27 @@
       <VideoCard :source="vQ6" />
     </ClientOnly>
 
-    <section>
-      <!--  -->
-      <!--  -->
-      <!--  -->
+    <section class="mt-8">
+      <div class="flex flex-col gap-3">
+        <MatchCard
+          v-for="match in matches"
+          :key="match.id"
+          :match="match"
+          :bet-states="betStates"
+          @odds-click="toggleSelection(match.id, $event)"
+        />
+      </div>
+      <SelectedOdds :min-odds="totalOdds.min" :max-odds="totalOdds.max" />
     </section>
   </section>
 </template>
 
 <script lang="ts" setup>
 import vQ6 from '@/assets/q6.mov'
+import type { Match } from '@/types/betting'
+import { useBetting } from '@/composables/useBetting'
+import MatchCard from '@/components/q6/MatchCard.vue'
+import SelectedOdds from '@/components/q6/SelectedOdds.vue'
 
 defineOptions({
   name: 'Q6',
@@ -57,7 +68,40 @@ defineOptions({
  * 總 Odds-1 為 TeamA (1.25) * TeamE (1.75) = 2.1875
  * 總 Odds-2 為 TeamB (3.75) * TeamE (1.75) = 6.5625
  */
+const matches: Match[] = [
+  {
+    id: '1',
+    homeTeam: 'Team A',
+    awayTeam: 'Team B',
+    odds: {
+      home: 1.25,
+      draw: 10.0,
+      away: 3.75,
+    },
+  },
+  {
+    id: '2',
+    homeTeam: 'Team C',
+    awayTeam: 'Team D',
+    odds: {
+      home: 1.5,
+      draw: 12.0,
+      away: 2.5,
+    },
+  },
+  {
+    id: '3',
+    homeTeam: 'Team E',
+    awayTeam: 'Team F',
+    odds: {
+      home: 1.75,
+      draw: 8.0,
+      away: 2.25,
+    },
+  },
+]
 
+const { betStates, totalOdds, toggleSelection } = useBetting(matches)
 </script>
 
 <style>
