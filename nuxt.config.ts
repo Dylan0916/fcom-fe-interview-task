@@ -13,4 +13,12 @@ export default defineNuxtConfig({
   alias: {
     '@': path.resolve(__dirname, './'),
   },
+
+  typescript: {
+    tsConfig: {
+      compilerOptions: {
+        types: ['vitest/globals']
+      }
+    }
+  }
 })
