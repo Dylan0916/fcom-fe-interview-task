@@ -22,7 +22,7 @@ import { BET_CONFIGS } from '@/constants/betting'
 import { getBettingKey } from '@/utils/betting'
 import OddsButton from '@/components/q6/OddsButton.vue'
 
-interface Props {
+export interface Props {
   match: Match
   betStates: ReadonlyMap<string, BetState>
 }

@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-interface Props {
+export interface Props {
   label: string
   odds: number
   isSelected: boolean

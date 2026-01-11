@@ -6,7 +6,7 @@
 </template>
 
 <script lang="ts" setup>
-interface Props {
+export interface Props {
   minOdds: number
   maxOdds: number
 }
