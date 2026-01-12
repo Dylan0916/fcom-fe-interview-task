@@ -25,41 +25,83 @@ defineOptions({
   name: 'Q3',
 })
 
-function getGiftTips(deviceScope) {
-  let isSupportApp = 0,
-    isSupportPc = 0,
-    marker = 0,
-    maskTips;
+/**
+ * 以下是原始 code 的建議：
+ * 1. `deviceScope` 參數要給型別，並且要檢查是否為陣列，若不為陣列或空陣列則回傳預設值
+ * 2. deviceScope 的值可以限制在 enum 中
+ * 3. switch-case 可以改用 map 來實現
+ * 4. isSupportApp 和 isSupportPc 用 `is` 開頭，但型別卻不是 boolean
+ * 5. tip 的文字靠加總來決定會有風險，若未來加上更多裝置判斷，很可能發生加總衝突的狀況
+ * 6. 判斷支援的裝置的邏輯可以另外抽一個 function 來實現，簡化主 function 的邏輯，利於共用和測試
+ * 7. `deviceScope.includes(3)` 和 `deviceScope.includes(2)` 的判斷式不確定是不是寫反了，因 `includes(3)` 時是設置 `isSupportPc`，而 `includes(2)` 時是重置 `isSupportApp` 和 `isSupportPc`，但或許 `includes(3)` 是要支援 App 和 PC
+ *
+ * 下方是我假設每個 device 都有獨立值的改寫：
+ */
 
-  if (deviceScope.includes(1)) {
-    isSupportApp = 1;
-  }
-  if (deviceScope.includes(3)) {
-    isSupportPc = 2;
-  }
-
-  if (deviceScope.includes(2)) {
-    isSupportApp = 0;
-    isSupportPc = 0;
-  }
-
-  marker = isSupportApp + isSupportPc;
-  switch (marker) {
-    case 1:
-      maskTips = "Exclusive to the App / PC";
-      break;
-    case 2:
-      maskTips = "Exclusive to the Mobile Web";
-      break;
-    case 3:
-      maskTips = "Exclusive to the App / Mobile Web";
-      break;
-    default:
-      maskTips = "";
-  }
-
-  return maskTips;
+enum DeviceScope {
+  APP = 1,
+  PC = 2,
+  MOBILE_WEB = 3,
 }
+
+const TIPS_CONFIG = [
+  {
+    devices: [DeviceScope.APP, DeviceScope.PC],
+    text: 'Exclusive to the App / PC',
+  },
+  {
+    devices: [DeviceScope.APP, DeviceScope.MOBILE_WEB],
+    text: 'Exclusive to the App / Mobile Web',
+  },
+  {
+    devices: [DeviceScope.MOBILE_WEB],
+    text: 'Exclusive to the Mobile Web',
+  },
+]
+const DEFAULT_TIP = ''
+
+function getGiftTips(deviceScope: DeviceScope[]) {
+  if (!Array.isArray(deviceScope) || deviceScope.length === 0) {
+    return DEFAULT_TIP
+  }
+
+  const deviceScopeSet = new Set(deviceScope)
+  const config = TIPS_CONFIG.find(config => config.devices.every(device => deviceScopeSet.has(device)))
+
+  return config ? config.text : DEFAULT_TIP
+}
+
+/**
+ * 甚至若前綴都一樣，且 `DeviceScope` 中的裝置都支援，也可以這樣改寫：
+ ```typescript
+  enum DeviceScope {
+    APP = 1,
+    PC = 2,
+    MOBILE_WEB = 3,
+  }
+
+  const DEVICE_TEXT_MAP = {
+    [DeviceScope.APP]: 'App',
+    [DeviceScope.PC]: 'PC',
+    [DeviceScope.MOBILE_WEB]: 'Mobile Web',
+  }
+  const TIP_PREFIX = 'Exclusive to the'
+  const DEFAULT_TIP = ''
+
+  function getGiftTips(deviceScope: DeviceScope[]) {
+    if (!Array.isArray(deviceScope) || deviceScope.length === 0) {
+      return DEFAULT_TIP
+    }
+
+    const deviceTexts = deviceScope
+      .toSorted()
+      .map(device => DEVICE_TEXT_MAP[device])
+      .filter(Boolean)
+
+    return deviceTexts.length === 0 ? DEFAULT_TIP : `${TIP_PREFIX} ${deviceTexts.join(' / ')}`
+  }
+  ```
+ */
 
 </script>
 
